@@ -1,5 +1,6 @@
 #include "SystemClass.h"
 
+
 SystemClass::SystemClass()
 {
 	m_input = 0;
@@ -21,6 +22,15 @@ bool SystemClass::Initialize()
 
 	screenHeight = 0;
 	screenWidth = 0;
+	
+	if (ALLOW_CONSOLE)
+	{
+		result = InitializeConsole();
+		if (!result)
+		{
+			return false;
+		}
+	}
 
 	InitializeWindows(screenHeight, screenWidth);
 
@@ -45,6 +55,19 @@ bool SystemClass::Initialize()
 	}
 
 	return true;
+}
+
+bool SystemClass::InitializeConsole()
+{
+	bool result = AllocConsole();
+
+	FILE* file;
+	
+	freopen_s(&file, "CONIN$", "r", stdin);
+	freopen_s(&file, "CONOUT$", "w", stderr);
+	freopen_s(&file, "CONOUT$", "w", stdout);
+
+	return result;
 }
 
 void SystemClass::Shutdown()
@@ -165,8 +188,19 @@ void SystemClass::InitializeWindows(int& screenHeight, int& screenWidth)
 
 	RegisterClassEx(&wc);
 
-	screenHeight = GetSystemMetrics(SM_CYSCREEN);
-	screenWidth = GetSystemMetrics(SM_CXSCREEN);
+	int left = GetSystemMetrics(SM_XVIRTUALSCREEN);
+	int top = GetSystemMetrics(SM_YVIRTUALSCREEN);
+
+	screenHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+	screenWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+
+	if (ALLOW_CONSOLE)
+	{
+		std::cout << "left : " << left << std::endl;
+		std::cout << "top : " << top << std::endl;
+		std::cout << "screenHeight : " << screenHeight << std::endl;
+		std::cout << "screenWidth : " << screenWidth << std::endl;
+	}
 
 	if (FULL_SCREEN)
 	{
@@ -180,13 +214,17 @@ void SystemClass::InitializeWindows(int& screenHeight, int& screenWidth)
 		ChangeDisplaySettings(&dmScreenSettings, CDS_FULLSCREEN);
 
 		posX = posY = 0;
-	}else
+	}
+	else
 	{
 		screenWidth = 1600;
 		screenHeight = 900;
 
-		posX = (GetSystemMetrics(SM_CXSCREEN) - screenWidth / 2);
-		posY = (GetSystemMetrics(SM_CYSCREEN) - screenHeight / 2);
+		//posX = (GetSystemMetrics(SM_CXVIRTUALSCREEN) - screenWidth / 2);
+		//posY = (GetSystemMetrics(SM_CYVIRTUALSCREEN) - screenHeight / 2);
+		
+		posX = (3840 - screenWidth) / 2;
+		posY = (2160 - screenHeight) / 2;
 	}
 
 	m_hwnd = CreateWindowEx(WS_EX_APPWINDOW, m_applicationName, m_applicationName,

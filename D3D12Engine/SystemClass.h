@@ -6,9 +6,12 @@
 #define WIN32_LEAN_AND_MEAN
 
 #include <windows.h>
+#include <iostream>
 
 #include "InputClass.h"
 #include "GraphicsClass.h"
+
+const bool ALLOW_CONSOLE = true;
 
 class SystemClass
 {
@@ -27,6 +30,7 @@ private:
 	bool Frame();
 	void InitializeWindows(int&, int&);
 	void ShutdownWindows();
+	bool InitializeConsole();
 
 private:
 	LPCWSTR m_applicationName;
